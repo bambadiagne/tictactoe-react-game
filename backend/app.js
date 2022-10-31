@@ -12,8 +12,6 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.json());
-app.get('/', function (req, res) {
-    res.send('Hello World GET / page')
-  })
+
 
 module.exports = app;

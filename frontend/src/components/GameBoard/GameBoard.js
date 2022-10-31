@@ -4,17 +4,17 @@ function GameBoard({ id, disabled }) {
   return (
     <div className="container-fluid">
       <div className="d-flex flex-row">
-        {Array.from(Array(3).keys()).map((element) => (
+        {[1,2,3].map((element) => (
           <ButtonBoard key={element} id={element} disabled={false} />
         ))}
       </div>
       <div className="d-flex flex-row">
-        {Array.from(Array(3).keys()).map((element) => (
+        {[4,5,6].map((element) => (
           <ButtonBoard key={element} id={element} disabled={false} />
         ))}
       </div>
       <div className="d-flex flex-row">
-        {Array.from(Array(3).keys()).map((element) => (
+        {[7,8,9].map((element) => (
           <ButtonBoard key={element} id={element} disabled={false} />
         ))}
       </div>

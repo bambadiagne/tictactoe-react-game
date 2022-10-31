@@ -1,9 +1,36 @@
 import React, { useEffect, useState } from "react";
 import Button from "../Utils/Button/Button";
+import { useNavigate } from "react-router-dom";
+import ws from '../../utils/websocket';
+import {DataFormat} from "../../utils/data";
 function HomePage() {
+  useEffect(()=>{
+    ws.onopen=() => {
+      console.log('====================================');
+      console.log("Logged into websocket");
+      console.log('====================================');
+    }
+  },[]);
+  let navigate = useNavigate();
   const [name, setName] = useState("");
   const [showForm, setShowForm] = useState(false);
-  console.log(name);
+  
+  
+  const signup=(e)=>{
+   e.preventDefault();
+   if(name===""){
+    alert('Le nom est obligatoire');
+   }
+   else{
+    ws.send(JSON.stringify(new DataFormat("ADD_USER",{name})));
+    
+   ws.onmessage=(mess)=>{
+    navigate("../gamemode", { replace: true });
+    //
+    }
+    
+   }
+  }
   return (
     <div className="full-image-bg load-home d-flex flex-row justify-content-center">
       <div hidden={showForm} style={{ paddingTop: "10%" }}>
@@ -13,7 +40,7 @@ function HomePage() {
         <Button setclick={() => setShowForm(true)} name={"Jouer"} />
       </div>
       <div className="my-auto">
-        <form hidden={!showForm} className="bg-light p-5 rounded shadow-lg">
+        <form onSubmit={signup} hidden={!showForm} className="bg-light p-5 rounded shadow-lg">
           <h2 className="text-center mb-2">Inscription</h2>
           <div className="row">
             <div className="form-group d-flex flex-row rounded">

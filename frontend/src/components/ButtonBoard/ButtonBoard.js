@@ -8,7 +8,7 @@ function ButtonBoard({ id, disabled }) {
         onClick={() => setDisabled(true)}
         disabled={disabledButton}
         id={id}
-        style={{ minHeight: "200px" }}
+        style={{ minHeight: "200px"}}
         className="h-100 p-1 w-100"
       ></button>
     </div>

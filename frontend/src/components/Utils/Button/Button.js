@@ -5,6 +5,7 @@ function Button({ name, setclick }) {
       <button
         onClick={setclick}
         className="btn rounded  btn-primary h-100 w-100 p-3 "
+      style={{fontFamily:"Arial Black"}}
       >
         {name}
       </button>
