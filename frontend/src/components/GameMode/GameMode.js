@@ -1,9 +1,49 @@
 import React, {useState } from "react";
 import Button from "../Utils/Button/Button";
 import ws from '../../utils/websocket';
+import {DataFormat} from "../../utils/data";
+import GameBoard from "components/GameBoard/GameBoard";
+import { clear } from "@testing-library/user-event/dist/clear";
 function GameMode() {
   
   const [showLevel,setShowLevel]=useState(false);
+  const [game,setGame]=useState(null);
+  const [intervalId, setIntervalId] = useState(null);
+
+  const createGame=(e)=>{
+    e.preventDefault();
+    let count =0;
+    const user= JSON.parse(localStorage.getItem('user'));
+     let myInterval = setInterval(()=>{
+      
+      
+      ws.send(JSON.stringify(new DataFormat("CREATE_GAME",{userID:user.userID})));
+        
+      if(count===3){
+        clearInterval(myInterval);
+      }
+      count++;
+      }, 1000);
+    setIntervalId(myInterval);
+  }
+      
+    ws.onmessage=(mess)=>{
+      const result = JSON.parse(mess.data);
+      console.log('BEFORE DATA',result);
+      if(result.game==null){
+        console.log("Aucun joueur disponible!Veuillez reessayer plus tard ou inviter un ami");
+      }else{
+        console.log('DATA',result);    
+        setGame(result.game); 
+        clearInterval(intervalId);
+        ws.send(JSON.stringify(new DataFormat("GET_SINGLE_ROOM",{roomId:result.game.room})));
+      }
+      
+       
+    };
+    
+     
+   
   return (
     <div className="container-fluid full-image-bg load-game-mode">
         <div>
@@ -15,12 +55,15 @@ function GameMode() {
             
               </div>
             <div className="col">
-            <Button setclick={() => console.log("Nice")} name={"PLAYER VS PLAYER"} />
+            <Button setclick={createGame} name={"PLAYER VS PLAYER"} />
             
             </div>
               
             </div>
           
+        </div>
+        <div hidden={!game}>
+          <GameBoard game={game} />
         </div>
         <div hidden={!showLevel} className="pt-5">
           <div className="d-flex flex-column ">
