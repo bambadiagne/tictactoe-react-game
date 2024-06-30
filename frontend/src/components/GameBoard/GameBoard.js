@@ -1,40 +1,54 @@
 import React, { useEffect, useState } from "react";
 import ButtonBoard from "../ButtonBoard/ButtonBoard.js";
-
-function GameBoard({ game }) {
+import Spinner from "../Utils/Spinner/Spinner.js";
+function GameBoard({ game,spinner }) {
   const [timer, setTimer] = useState(30);
-
+  const [intervalId, setIntervalId] = useState(null);
+  // const [content, setContent] = useState('');
+  // const change = () => {
+  //   setContent((prevContent) => (prevContent === '❌' ? '⭕' : '❌'));
+  // };
+  const buttonConfig = [
+    ["X", "O", "X"],
+    ["O", "X", "O"],
+    ["O", "X", "X"],
+  ]
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setTimer((prevTimer) => prevTimer - 1);
+      console.log("Timer", timer);
+      
     }, 1000);
-
+    if(timer===0){
+      setTimer(30);
+    }
+    setIntervalId(interval);
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [timer]);
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid d-flex flex-column justify-content-center">
+      <div hidden={spinner} className="">
+        <p>Player is playing</p>
+      <Spinner loading={spinner} />
+      </div>
+      <div hidden={!spinner}>    
       <h3>Timer 00:{timer}s</h3>
-      <div className="d-flex flex-row">
-        {[1, 2, 3].map((element) => (
-          <ButtonBoard key={element} id={element} disabled={false} />
-        ))}
+      {buttonConfig.map((row, rowIndex) => (
+        <div key={rowIndex} className="d-flex flex-row">
+          {row.map((element,index) => (
+            <ButtonBoard  key={`${element}-${rowIndex}-${index}`} id={`${element}-${rowIndex}-${index}`} disabled={false} />
+          ))}
+        </div>
+      ))}
       </div>
-      <div className="d-flex flex-row">
-        {[4, 5, 6].map((element) => (
-          <ButtonBoard key={element} id={element} disabled={false} />
-        ))}
-      </div>
-      <div className="d-flex flex-row">
-        {[7, 8, 9].map((element) => (
-          <ButtonBoard key={element} id={element} disabled={false} />
-        ))}
-      </div>
-      
     </div>
   );
+    
+    
 }
 
 export default GameBoard;

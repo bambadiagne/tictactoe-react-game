@@ -101,10 +101,10 @@ wss.on("connection", function connection(ws) {
               StatusPlayer.IS_PLAYING;
             allUsers.result[allUsers.result.indexOf(randomUser)].statusPlayer =
               StatusPlayer.IS_PLAYING;
-            allUsers.result[allUsers.result.indexOf(userJoin)].tokenSymbol =
-              "X";
-            allUsers.result[allUsers.result.indexOf(randomUser)].tokenSymbol =
-              "O";
+            // allUsers.result[allUsers.result.indexOf(userJoin)].tokenSymbol =
+            //   "❌";
+            // allUsers.result[allUsers.result.indexOf(randomUser)].tokenSymbol =
+            //   "O";
             const room = new Room(crypto.randomUUID(), [],[userJoin.connection],false);
             allRooms.rooms.push(room);
              delete userJoin.connection;
