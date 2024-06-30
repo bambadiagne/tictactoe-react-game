@@ -1,3 +1,4 @@
+"use strict";
 const User = require("./utils/user");
 const Game = require("./utils/game");
 const Room = require("./utils/room");
@@ -49,46 +50,91 @@ const allRooms = { rooms: [] };
 wss.on("connection", function connection(ws) {
   ws.on("message", function incoming(data) {
     const { type, dataReceived } = JSON.parse(data);
-    console.log("====================================");
-    console.log(type, dataReceived);
-    console.log("====================================");
+    // console.log("====================================");
+    // console.log(type, dataReceived);
+    // console.log("====================================");
 
     switch (type) {
       case "ADD_USER":
-        allUsers["result"].push(
-          new User(
-            crypto.randomUUID(),
-            dataReceived.name,
-            StatusPlayer.NOT_PLAYING
-          )
+        const user = new User(
+          crypto.randomUUID(),
+          dataReceived.name,
+          StatusPlayer.NOT_PLAYING,
+          "",
+          ws
         );
+        allUsers["result"].push(user);
+        ws.send(JSON.stringify(user));
         break;
       case "CREATE_GAME":
-        const userId = allUsers.result.find((user) => (user.id = data.userId));
-        allUsers.result[userId].statusPlayer = StatusPlayer.WANT_TO_PLAY;
-        const roomID = crypto.randomUUID();
-        allRooms.rooms.push(new Room(roomID, [dataReceived.userId]));
+        const userJoin = allUsers.result.find(
+          (user) => user.userID === dataReceived.userID
+        );
+        allUsers.result[allUsers.result.indexOf(userJoin)].statusPlayer =
+          StatusPlayer.WANT_TO_PLAY;
+
+        // console.log("====================================");
+        // console.log('test',allUsers.result[allUsers.result.indexOf(userJoin)]);
+        // console.log("====================================");
+
         if (dataReceived.isBot) {
-          const newGame = new Game(roomID, 0, true);
+          allUsers.result[allUsers.result.indexOf(userJoin)].tokenSymbol = "X";
+          const newGame = new Game(room, 0, true);
           ws.send(JSON.stringify(newGame));
         } else {
           const availablesPlayers = allUsers.result.filter(
             (player) =>
-              (player.statusPlayer =
-                StatusPlayer.WANT_TO_PLAY && player.id != userId)
+              player.statusPlayer === StatusPlayer.WANT_TO_PLAY &&
+              player.userID !== userJoin.userID
           );
+
+          //   console.log("====================================");
+          // console.log('availablesPlayers',availablesPlayers.length);
+          // console.log("====================================");
           if (availablesPlayers.length > 0) {
+           
             const randomUser =
               availablesPlayers[
                 Math.floor(Math.random() * availablesPlayers.length)
               ];
-            ws.send(
-              JSON.stringify({ game: new Game(roomID, 0, false), userId })
-            );
+            allUsers.result[allUsers.result.indexOf(userJoin)].statusPlayer =
+              StatusPlayer.IS_PLAYING;
+            allUsers.result[allUsers.result.indexOf(randomUser)].statusPlayer =
+              StatusPlayer.IS_PLAYING;
+            allUsers.result[allUsers.result.indexOf(userJoin)].tokenSymbol =
+              "X";
+            allUsers.result[allUsers.result.indexOf(randomUser)].tokenSymbol =
+              "O";
+            const room = new Room(crypto.randomUUID(), [],[userJoin.connection],false);
+            allRooms.rooms.push(room);
+             delete userJoin.connection;
+             room.users.push(userJoin);
+             room.connections.push(randomUser.connection);
+             delete randomUser.connection;
+             room.users.push(randomUser);
+            const newGame = new Game(JSON.stringify(room), 0, false);
+           room.connections.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({ game: newGame }));
+              }
+            });
+            
+          
           } else {
+            ws.send(JSON.stringify({ game: null }));
           }
         }
-
+      case "GET_SINGLE_ROOM":
+        console.log("dataReceived",dataReceived);
+        if(dataReceived.roomId){
+          const room = allRooms.rooms.find(room=>room.roomId===dataReceived.roomId);
+          console.log("room",room);
+          ws.send(JSON.stringify(room));
+        }
+        else{
+          ws.send(JSON.stringify({room:null}));
+        }
+        break;
       case "GAME_VS_IA":
         break;
       case "GAME_VS_PLAYERS":
@@ -96,7 +142,7 @@ wss.on("connection", function connection(ws) {
       default:
         break;
     }
-    ws.send(JSON.stringify(allUsers));
+    // ws.send(JSON.stringify(allUsers));
   });
 });
 

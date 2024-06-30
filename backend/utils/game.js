@@ -1,6 +1,6 @@
  class Game{
-    constructor(roomId,step,isBot){
-        this.roomId=roomId;
+    constructor(room,step,isBot){
+        this.room=room;
         this.step=step;
         this.isBot=isBot;
         this.tab=Array.from({length: 3}).fill(Array.from({length: 3},()=>0));
