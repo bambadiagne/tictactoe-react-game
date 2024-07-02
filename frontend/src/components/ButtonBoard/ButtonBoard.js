@@ -5,7 +5,7 @@ function ButtonBoard({ id, value, sendDataToParent, marker }) {
 
   useEffect(() => {
     if (value === "X" || value === "O") {
-      document.getElementById(id).innerText = value == "X" ? "❌" : "⭕";
+      document.getElementById(id).innerText = value === "X" ? "❌" : "⭕";
       document.getElementById(id).style.fontSize = "6vw";
       setDisabled(true);
     }

@@ -1,7 +1,18 @@
-body {
+/* body {
   background-color: #282c34;
   color: white;
   padding: 40px;
   font-family: Arial;
-  text-align: center;
+  text-align: center; */
+/* } */
+.play-regular {
+  font-family: "Play", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.play-bold {
+  font-family: "Play", sans-serif;
+  font-weight: 700;
+  font-style: normal;
 }

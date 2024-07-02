@@ -58,8 +58,10 @@ wss.on("connection", function connection(ws) {
 
     switch (type) {
       case "ADD_USER":
+        const uniqueId = crypto.randomUUID();
+        ws.id = uniqueId;
         const user = new User(
-          crypto.randomUUID(),
+          uniqueId,
           dataReceived.name,
           StatusPlayer.NOT_PLAYING,
           "",
@@ -177,8 +179,30 @@ wss.on("connection", function connection(ws) {
       default:
         break;
     }
-    // ws.send(JSON.stringify(allUsers));
-  });
+  
+  },)
+  .on("close",() => {
+    console.log("ws",ws);
+        console.log("User disconnected");
+      console.log("usersss",allUsers.result);  
+    const userIndex = allUsers.result.findIndex(user => user.userID === ws.id);
+    console.log("User index", userIndex);
+    if (userIndex !== -1) {
+      console.log(`User ${allUsers.result[userIndex].name} disconnected because of connection closed`);
+       allUsers.result[userIndex].statusPlayer = StatusPlayer.NOT_PLAYING;
+       const indexRoom = allRooms.rooms.findIndex(room => room.users.includes(allUsers.result[userIndex]));
+        if (indexRoom !== -1) {
+          console.log("Index room",indexRoom);
+          allRooms.rooms[indexRoom].connections.forEach((client) => {
+            client.send(JSON.stringify({ message:`Your opponent is disconnected` }));
+          });
+        }
+      console.log(`User ${allUsers.result[userIndex].name} disconnected`);
+      allUsers.result.splice(userIndex, 1);
+      
+    }
+  })
+  
 });
 
 server.on("error", errorHandler);

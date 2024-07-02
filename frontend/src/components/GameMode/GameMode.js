@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../Utils/Button/Button";
 import ws from "../../utils/websocket";
 import { DataFormat } from "../../utils/data";
 import GameBoard from "components/GameBoard/GameBoard";
 import { useNavigate } from "react-router";
+import Spinner from "../Utils/Spinner/Spinner.js";
+import Swal from "sweetalert2";
+
 function GameMode() {
+  useEffect(() => {
+    document.title = "TicTacToe | Game Mode";
+  }, []);
   const [marker, setMarker] = useState("⭕");
   const [showLevel, setShowLevel] = useState(false);
   const [game, setGame] = useState(null);
@@ -13,9 +19,13 @@ function GameMode() {
   const [currentPlayer, setCurrentPlayer] = useState(
     JSON.parse(localStorage.getItem("user"))
   );
+
   const [board, setBoard] = useState([[], [], []]);
   const navigate = useNavigate();
-
+  const handleIALevel = () => {
+    setShowLevel(true);
+    Swal.fire("Coming soon!");
+  };
   const handleUpdateBoard = (data) => {
     const [x, y] = data;
     const k = marker === "⭕" ? "O" : "X";
@@ -25,7 +35,6 @@ function GameMode() {
       newGame.tab[x][y] = k;
       return newGame;
     });
-    console.log("Update board", board);
     ws.send(
       JSON.stringify(
         new DataFormat("UPDATE_GAME", { game: { ...game, tab: board } })
@@ -34,6 +43,7 @@ function GameMode() {
   };
   const createGame = (e) => {
     e.preventDefault();
+    setShowSpinner(true);
     let count = 0;
     const user = JSON.parse(localStorage.getItem("user"));
     let myInterval = setInterval(() => {
@@ -42,6 +52,12 @@ function GameMode() {
       );
 
       if (count === 10) {
+        Swal.fire({
+          title: "No opponents found",
+          text: "Try again or invite a friend",
+          icon: "info",
+        });
+        setShowSpinner(false);
         clearInterval(myInterval);
         ws.send(
           JSON.stringify(
@@ -60,18 +76,50 @@ function GameMode() {
 
   ws.onmessage = (mess) => {
     const result = JSON.parse(mess.data);
+    if (result.message) {
+      console.log(result.message);
+      Swal.fire({
+        title: "Opponent disconnected",
+        text: `${result.message} disconnected`,
+        icon: "warning",
+      });
+      navigate("../", { replace: true });
+      return;
+    }
     if (result.updatedGame) {
+      console.log("updatedGame", result.updatedGame);
       setBoard(Array.from(result.updatedGame.tab));
       setGame(result.updatedGame);
       setShowSpinner(!showSpinner);
       setCurrentPlayer(result.updatedGame.room.users[0].name);
       setMarker(marker === "⭕" ? "❌" : "⭕");
       if (result.updatedGame.isFinished && result.updatedGame.winner) {
-        alert(`Le gagnant est ${result.updatedGame.winner}`);
+        const swalDetails =
+          JSON.parse(localStorage.getItem("user")).name ===
+          result.updatedGame.winner
+            ? {
+                title: "VICTORY",
+                text: `You win against ${result.updatedGame.room.users[1]}`,
+                icon: "success",
+              }
+            : {
+                title: "DEFEAT",
+                text: `You lose against ${result.updatedGame.room.users[0]}`,
+                icon: "error",
+              };
+        Swal.fire({
+          title: swalDetails.title,
+          text: swalDetails.text,
+          icon: swalDetails.icon,
+        });
         navigate("../", { replace: true });
         return;
       } else if (result.updatedGame.isFinished) {
-        alert("Match nul");
+        Swal.fire({
+          title: "No opponents found",
+          text: "DRAW",
+          icon: "warning",
+        });
         navigate("../", { replace: true });
         return;
       }
@@ -92,18 +140,24 @@ function GameMode() {
 
   return (
     <div className="container-fluid full-image-bg load-game-mode">
+      <Spinner loading={showSpinner} />
       <div>
         <div hidden={game} className="">
-          <h1 className="text-center p-5 text-white">Mode de Jeu</h1>
-          <div className=" row w-80 my-5">
-            <div className="col">
+          <h1 className="text-center p-5 text-dark play-bold">Game Mode 🎮</h1>
+          <div className="d-flex flex-column w-80 my-5 justify-content-between">
+            <div className="mb-5">
               <Button
-                setclick={() => setShowLevel(true)}
-                name={"PLAYER VS IA"}
+                setclick={handleIALevel}
+                classes="play-bold btn-lg"
+                name={"🧑  VS  🤖"}
               />
             </div>
-            <div className="col">
-              <Button setclick={createGame} name={"PLAYER VS PLAYER"} />
+            <div className="">
+              <Button
+                classes="btn-lg"
+                setclick={createGame}
+                name={"🧑  VS  🧑"}
+              />
             </div>
           </div>
         </div>
@@ -121,13 +175,13 @@ function GameMode() {
         <div hidden={true} className="pt-5">
           <div className="d-flex flex-column ">
             <div className="mb-5">
-              <Button setclick={() => console.log("Nice")} name={"FACILE"} />
+              <Button setclick={() => console.log("Nice")} name={"EASY"} />
             </div>
             <div className="mb-5">
-              <Button setclick={() => console.log("Nice")} name={"MOYEN"} />
+              <Button setclick={() => console.log("Nice")} name={"MEDIUM"} />
             </div>
             <div className="mb-5">
-              <Button setclick={() => console.log("Nice")} name={"DIFFICILE"} />
+              <Button setclick={() => console.log("Nice")} name={"HARD"} />
             </div>
           </div>
         </div>

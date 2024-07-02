@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import Button from "../Utils/Button/Button";
 import { useNavigate } from "react-router-dom";
 import ws from "../../utils/websocket";
 import { DataFormat } from "../../utils/data";
 import homepage from "../../images/homepage.jpg";
 function HomePage() {
   useEffect(() => {
+    document.title = "TicTacToe | Home";
     ws.onopen = () => {
       console.log("====================================");
       console.log("Logged into websocket");
@@ -32,7 +32,7 @@ function HomePage() {
       <div className="">
         <form onSubmit={signup} className="bg-light p-5 rounded shadow-lg">
           <div className="mb-5">
-            <h1 className="text-dark">TicTacToe game</h1>
+            <h1 className="text-dark play-bold">TicTacToe game</h1>
             <div>
               <img
                 src={homepage}
@@ -49,18 +49,12 @@ function HomePage() {
                 type="text"
                 onChange={(e) => setName(e.target.value)}
                 className="form-control p-2 rounded-0"
-                placeholder="thegamer"
+                placeholder="Enter name ex:thegamer"
                 name="name"
                 id="name"
               />
             </div>
             <div className="col-auto px-0">
-              {/* <button
-                type="submit"
-                className="rounded-0 rounded-end btn btn-primary font-weight-bold d-none d-sm-block"
-              >
-                Ajouter
-              </button> */}
               <button
                 type="submit"
                 className="rounded-0 rounded-end btn btn-primary font-weight-bold "
