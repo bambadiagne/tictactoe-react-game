@@ -3,7 +3,6 @@ import Button from "../Utils/Button/Button";
 import ws from "../../utils/websocket";
 import { DataFormat } from "../../utils/data";
 import GameBoard from "components/GameBoard/GameBoard";
-import { useNavigate } from "react-router";
 import Spinner from "../Utils/Spinner/Spinner.js";
 import Swal from "sweetalert2";
 
@@ -11,35 +10,20 @@ function GameMode() {
   useEffect(() => {
     document.title = "TicTacToe | Game Mode";
   }, []);
-  const [marker, setMarker] = useState("⭕");
+
   const [showLevel, setShowLevel] = useState(false);
   const [game, setGame] = useState(null);
   const [intervalId, setIntervalId] = useState(null);
   const [showSpinner, setShowSpinner] = useState(false);
-  const [currentPlayer, setCurrentPlayer] = useState(
-    JSON.parse(localStorage.getItem("user"))
-  );
-
-  const [board, setBoard] = useState([[], [], []]);
-  const navigate = useNavigate();
+  useEffect(() => {
+    console.log("Game updated", game);
+  }, [game]);
   const handleIALevel = () => {
     setShowLevel(true);
     Swal.fire("Coming soon!");
   };
-  const handleUpdateBoard = (data) => {
-    const [x, y] = data;
-    const k = marker === "⭕" ? "O" : "X";
-
-    setGame((prevGame) => {
-      const newGame = { ...prevGame };
-      newGame.tab[x][y] = k;
-      return newGame;
-    });
-    ws.send(
-      JSON.stringify(
-        new DataFormat("UPDATE_GAME", { game: { ...game, tab: board } })
-      )
-    );
+  const handleShowGameMode = (gameStatus) => {
+    setGame(null);
   };
   const createGame = (e) => {
     e.preventDefault();
@@ -68,7 +52,6 @@ function GameMode() {
           )
         );
       }
-      console.log("count", count);
       count++;
     }, 1000);
     setIntervalId(myInterval);
@@ -76,65 +59,10 @@ function GameMode() {
 
   ws.onmessage = (mess) => {
     const result = JSON.parse(mess.data);
-    if (result.message) {
-      console.log(result.message);
-      Swal.fire({
-        title: "Opponent disconnected",
-        text: `${result.message} disconnected`,
-        icon: "warning",
-      });
-      navigate("../", { replace: true });
-      return;
-    }
-    if (result.updatedGame) {
-      console.log("updatedGame", result.updatedGame);
-      setBoard(Array.from(result.updatedGame.tab));
-      setGame(result.updatedGame);
-      setShowSpinner(!showSpinner);
-      setCurrentPlayer(result.updatedGame.room.users[0].name);
-      setMarker(marker === "⭕" ? "❌" : "⭕");
-      if (result.updatedGame.isFinished && result.updatedGame.winner) {
-        const swalDetails =
-          JSON.parse(localStorage.getItem("user")).name ===
-          result.updatedGame.winner
-            ? {
-                title: "VICTORY",
-                text: `You win against ${result.updatedGame.room.users[1]}`,
-                icon: "success",
-              }
-            : {
-                title: "DEFEAT",
-                text: `You lose against ${result.updatedGame.room.users[0]}`,
-                icon: "error",
-              };
-        Swal.fire({
-          title: swalDetails.title,
-          text: swalDetails.text,
-          icon: swalDetails.icon,
-        });
-        navigate("../", { replace: true });
-        return;
-      } else if (result.updatedGame.isFinished) {
-        Swal.fire({
-          title: "No opponents found",
-          text: "DRAW",
-          icon: "warning",
-        });
-        navigate("../", { replace: true });
-        return;
-      }
-      return;
-    }
-    if (result.game == null) {
-      console.log(
-        "Aucun joueur disponible!Veuillez reessayer plus tard ou inviter un ami"
-      );
-    } else {
-      setGame(result.game);
-      setBoard(Array.from(result.game.tab));
-      const room = result.game.room;
+    if (result.status && result.data.step === 0) {
+      setGame(result.data);
       clearInterval(intervalId);
-      setShowSpinner(room.users[0] === currentPlayer.name ? false : true);
+      setShowSpinner(false);
     }
   };
 
@@ -163,13 +91,7 @@ function GameMode() {
         </div>
         {game && (
           <div>
-            <GameBoard
-              updateBoard={handleUpdateBoard}
-              marker={marker}
-              game={game}
-              spinner={showSpinner}
-              currentPlayer={currentPlayer}
-            />
+            <GameBoard showGameMode={handleShowGameMode} game={game} />
           </div>
         )}
         <div hidden={true} className="pt-5">
