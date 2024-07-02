@@ -12,7 +12,7 @@ function HomePage() {
       console.log("====================================");
     };
   }, []);
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const signup = (e) => {
     e.preventDefault();
@@ -24,7 +24,6 @@ function HomePage() {
       ws.onmessage = (mess) => {
         localStorage.setItem("user", mess.data);
         navigate("../gamemode", { replace: true });
-        //
       };
     }
   };
@@ -32,16 +31,20 @@ function HomePage() {
     <div className="mt-5 d-flex flex-row justify-content-sm-center">
       <div className="">
         <form onSubmit={signup} className="bg-light p-5 rounded shadow-lg">
-        <div className="mb-5">
-          <h1 className="text-dark">TicTacToe game</h1>
-          <div>
-          <img src={homepage} className="img-fluid rounded border" width={300} height={300}  />
-      
+          <div className="mb-5">
+            <h1 className="text-dark">TicTacToe game</h1>
+            <div>
+              <img
+                src={homepage}
+                className="img-fluid rounded border"
+                width={300}
+                height={300}
+              />
+            </div>
           </div>
-        </div>
-       
+
           <div className="d-flex flex-row  align-items-center ">
-            <div className="form-group col"> 
+            <div className="form-group col">
               <input
                 type="text"
                 onChange={(e) => setName(e.target.value)}
@@ -64,7 +67,6 @@ function HomePage() {
               >
                 <i className="fas fa-plus"></i>
               </button>
-              
             </div>
           </div>
         </form>
