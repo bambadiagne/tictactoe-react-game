@@ -34,11 +34,9 @@ const errorHandler = (error) => {
     case "EACCES":
       console.error(bind + " requires elevated privileges.");
       process.exit(1);
-      break;
     case "EADDRINUSE":
       console.error(bind + " is already in use.");
       process.exit(1);
-      break;
     default:
       throw error;
   }
@@ -47,6 +45,17 @@ const broadCastRoom = (room, data) => {
   room.connections.forEach((client) => {
     client.send(JSON.stringify(data));
   });
+};
+const clearRoom = (room) => {
+  console.log('room connections',room.connections.length);
+  room.users.forEach((user) => {
+    const userIndex = allUsers.result.findIndex(
+      (u) => u.userID === user.userID
+    );
+    allUsers.result[userIndex].statusPlayer = StatusPlayer.NOT_PLAYING;
+  });
+  const index = allRooms.rooms.findIndex((r) => r.roomId === room.roomId);
+  allRooms.rooms.splice(index, 1);
 };
 const server = http.createServer({ app });
 const wss = new WebSocket.Server({ server });
@@ -58,6 +67,8 @@ wss.on("connection", function connection(ws) {
 
     switch (type) {
       case "ADD_USER":
+        const isAlreadyUser = allUsers.result.find((user) => user.name === dataReceived.name);
+        if(!isAlreadyUser){
         const uniqueId = crypto.randomUUID();
         ws.id = uniqueId;
         const user = new User(
@@ -68,10 +79,12 @@ wss.on("connection", function connection(ws) {
           ws
         );
         allUsers["result"].push(user);
-        ws.send(JSON.stringify(user));
+        ws.send(JSON.stringify({data:user,status:true}));
+        return;
+      }
+      ws.send(JSON.stringify({ status:false, message: "User already exists" }));
         break;
       case "UPDATE_USER":
-        console.log("Update user", dataReceived);
         const userUpdate = allUsers.result.find(
           (user) => user.userID === dataReceived.userID
         );
@@ -88,7 +101,7 @@ wss.on("connection", function connection(ws) {
         if (dataReceived.isBot) {
           allUsers.result[allUsers.result.indexOf(userJoin)].tokenSymbol = "X";
           const newGame = new Game(room, 0, true);
-          ws.send(JSON.stringify(newGame));
+          ws.send(JSON.stringify({data:newGame,status:true}));
         } else {
           const availablesPlayers = allUsers.result.filter(
             (player) =>
@@ -112,10 +125,8 @@ wss.on("connection", function connection(ws) {
               false
             );
             allRooms.rooms.push(room);
-            delete userJoin.connection;
             room.users.push(userJoin);
             room.connections.push(randomUser.connection);
-            delete randomUser.connection;
             room.users.push(randomUser);
             const newGame = new Game(
               {
@@ -126,14 +137,13 @@ wss.on("connection", function connection(ws) {
               false
             );
             room.connections.forEach((client) => {
+              console.log("client",client.id);
               if (client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify({ game: newGame }));
+                client.send(JSON.stringify({ data: newGame,status:true }));
               }
             });
           } else {
-            ws.send(JSON.stringify({ game: null }));
-            // allUsers.result[allUsers.result.indexOf(userJoin)].statusPlayer =
-            // StatusPlayer.NOT_PLAYING;
+            ws.send(JSON.stringify({ message: "No player available",status:false}));
           }
         }
       case "GET_SINGLE_ROOM":
@@ -141,9 +151,7 @@ wss.on("connection", function connection(ws) {
           const room = allRooms.rooms.find(
             (room) => room.roomId === dataReceived.roomId
           );
-          ws.send(JSON.stringify(room));
-        } else {
-          ws.send(JSON.stringify({ room: null }));
+          ws.send(JSON.stringify({data:room,status:true}));
         }
         break;
       case "UPDATE_GAME":
@@ -151,7 +159,6 @@ wss.on("connection", function connection(ws) {
           (room) => room.roomId === dataReceived.game.room.roomId
         );
         if (dataReceived.game.step >= 4) {
-          console.log("after 4 steps", dataReceived.game.tab);
           const { result, element } = checkMatrix(dataReceived.game.tab);
           if (result) {
             dataReceived.game.winner =
@@ -159,42 +166,33 @@ wss.on("connection", function connection(ws) {
                 ? dataReceived.game.room.users[0]
                 : dataReceived.game.room.users[1];
             dataReceived.game.isFinished = true;
-            console.log("Winner", dataReceived.game.winner);
-            // ws.send(JSON.stringify({ updatedGame: dataReceived.game }));
-            broadCastRoom(room, { updatedGame: dataReceived.game });
+            broadCastRoom(room, { data: dataReceived.game,status:true });
+            clearRoom(room);
           }
-          broadCastRoom(room, { updatedGame: dataReceived.game });
+          broadCastRoom(room, { data: dataReceived.game,status:true });
         } else if (dataReceived.game.step === 8) {
           dataReceived.game.isFinished = true;
-          broadCastRoom(room, { updatedGame: dataReceived.game });
+          broadCastRoom(room, { data: dataReceived.game,status:true });
+          clearRoom(room);
+          
         } else {
           dataReceived.game.step = dataReceived.game.step + 1;
-          // room.connections.forEach((client) => {
-          //   client.send(JSON.stringify({ updatedGame: dataReceived.game }));
-          // });
-          broadCastRoom(room, { updatedGame: dataReceived.game });
+         broadCastRoom(room, { data: dataReceived.game,status:true });
         }
 
         break;
       default:
         break;
     }
-  
-  },)
+ },)
   .on("close",() => {
-    console.log("ws",ws);
-        console.log("User disconnected");
-      console.log("usersss",allUsers.result);  
     const userIndex = allUsers.result.findIndex(user => user.userID === ws.id);
-    console.log("User index", userIndex);
     if (userIndex !== -1) {
-      console.log(`User ${allUsers.result[userIndex].name} disconnected because of connection closed`);
        allUsers.result[userIndex].statusPlayer = StatusPlayer.NOT_PLAYING;
        const indexRoom = allRooms.rooms.findIndex(room => room.users.includes(allUsers.result[userIndex]));
         if (indexRoom !== -1) {
-          console.log("Index room",indexRoom);
           allRooms.rooms[indexRoom].connections.forEach((client) => {
-            client.send(JSON.stringify({ message:`Your opponent is disconnected` }));
+            client.send(JSON.stringify({ message:`Your opponent ${allUsers.result[userIndex].name} is disconnected`,status:false }));
           });
         }
       console.log(`User ${allUsers.result[userIndex].name} disconnected`);
