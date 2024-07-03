@@ -142,11 +142,10 @@ wss.on("connection", function connection(ws) {
                 client.send(JSON.stringify({ data: newGame,status:true }));
               }
             });
-          } else {
-            ws.send(JSON.stringify({ message: "No player available",status:false}));
-          }
+          } 
         }
       case "GET_SINGLE_ROOM":
+        
         if (dataReceived.roomId) {
           const room = allRooms.rooms.find(
             (room) => room.roomId === dataReceived.roomId
@@ -155,30 +154,24 @@ wss.on("connection", function connection(ws) {
         }
         break;
       case "UPDATE_GAME":
+        dataReceived.game.step = dataReceived.game.step + 1;
+        
         const room = allRooms.rooms.find(
           (room) => room.roomId === dataReceived.game.room.roomId
         );
         if (dataReceived.game.step >= 4) {
           const { result, element } = checkMatrix(dataReceived.game.tab);
+          
           if (result) {
-            dataReceived.game.winner =
-              element === "O"
-                ? dataReceived.game.room.users[0]
-                : dataReceived.game.room.users[1];
+            dataReceived.game.winner = element === "O" ? dataReceived.game.room.users[0] : dataReceived.game.room.users[1];
             dataReceived.game.isFinished = true;
-            broadCastRoom(room, { data: dataReceived.game,status:true });
+            clearRoom(room);
+          } else if (dataReceived.game.step === 9) {
+            dataReceived.game.isFinished = true;
             clearRoom(room);
           }
-          broadCastRoom(room, { data: dataReceived.game,status:true });
-        } else if (dataReceived.game.step === 8) {
-          dataReceived.game.isFinished = true;
-          broadCastRoom(room, { data: dataReceived.game,status:true });
-          clearRoom(room);
-          
-        } else {
-          dataReceived.game.step = dataReceived.game.step + 1;
-         broadCastRoom(room, { data: dataReceived.game,status:true });
         }
+        broadCastRoom(room, { data: dataReceived.game, status: true });
 
         break;
       default:
@@ -192,7 +185,7 @@ wss.on("connection", function connection(ws) {
        const indexRoom = allRooms.rooms.findIndex(room => room.users.includes(allUsers.result[userIndex]));
         if (indexRoom !== -1) {
           allRooms.rooms[indexRoom].connections.forEach((client) => {
-            client.send(JSON.stringify({ message:`Your opponent ${allUsers.result[userIndex].name} is disconnected`,status:false }));
+            client.send(JSON.stringify({ message:`Your opponent ${allUsers.result[userIndex].name} is disconnected`,status:false,disconnected:true }));
           });
         }
       console.log(`User ${allUsers.result[userIndex].name} disconnected`);

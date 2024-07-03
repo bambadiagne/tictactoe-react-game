@@ -5,7 +5,7 @@ Tic Tac Toe(morpion) game in react
 This project is a Tic Tac Toe game implemented using React and Node.js.
 <br><br> <br><br>
 <span style="display:block">
-<img src="tictoc1.gif"
+<img src="gameplay.gif"
      alt="Markdown Monster icon"
      style="float: left; margin-right: 10px;" /></span><br><br> <br><br>
 

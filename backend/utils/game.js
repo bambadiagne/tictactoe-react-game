@@ -4,9 +4,12 @@ class Game {
     this.step = step;
     this.isBot = isBot;
     this.finished = false;
-    this.tab = Array.from({ length: 3 }).fill(
-      Array.from({ length: 3 }, () => 0)
-    );
+    this.tab = [
+      ["1", "2", "3"],
+      ["4", "5", "6"],
+      ["7", "8", "9"]
+    ];
+    
   }
 }
 
