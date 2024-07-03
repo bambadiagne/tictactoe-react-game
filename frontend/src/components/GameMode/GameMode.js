@@ -15,14 +15,11 @@ function GameMode() {
   const [game, setGame] = useState(null);
   const [intervalId, setIntervalId] = useState(null);
   const [showSpinner, setShowSpinner] = useState(false);
-  useEffect(() => {
-    console.log("Game updated", game);
-  }, [game]);
   const handleIALevel = () => {
     setShowLevel(true);
     Swal.fire("Coming soon!");
   };
-  const handleShowGameMode = (gameStatus) => {
+  const handleShowGameMode = () => {
     setGame(null);
   };
   const createGame = (e) => {

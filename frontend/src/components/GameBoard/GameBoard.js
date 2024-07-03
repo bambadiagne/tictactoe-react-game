@@ -46,6 +46,7 @@ function GameBoard({ showGameMode, game }) {
       setBoard(Array.from(result.data.tab));
       setShowSpinner(!spinner);
       setCurrentPlayer(result.data.room.users[0].name);
+
       setMarker(marker === "⭕" ? "❌" : "⭕");
       if (result.data.isFinished && result.data.winner) {
         const swalDetails =
@@ -69,8 +70,8 @@ function GameBoard({ showGameMode, game }) {
         return;
       } else if (result.data.isFinished) {
         Swal.fire({
-          title: "No opponents found",
-          text: "DRAW",
+          title: "No winner",
+          text: "It's a draw!",
           icon: "warning",
         });
         showGameMode(true);
@@ -84,6 +85,8 @@ function GameBoard({ showGameMode, game }) {
         text: result.message,
       });
     }
+    if(result.disconnected) showGameMode(true);
+
   };
 
   return (

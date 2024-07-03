@@ -40,10 +40,12 @@ function HomePage() {
           title: "Error",
           text: result.message,
         });
+        
+     
     };
   };
   return (
-    <div className="mt-5 d-flex flex-row justify-content-sm-center">
+    <div className="mt-5 d-flex flex-row justify-content-center">
       <div className="">
         <form onSubmit={signup} className="bg-light p-5 rounded shadow-lg">
           <div className="mb-5">

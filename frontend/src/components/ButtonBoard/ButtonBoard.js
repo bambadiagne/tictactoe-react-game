@@ -5,17 +5,23 @@ function ButtonBoard({ id, value, sendDataToParent, marker }) {
 
   useEffect(() => {
     if (value === "X" || value === "O") {
-      document.getElementById(id).innerText = value === "X" ? "❌" : "⭕";
+      document.getElementById(id).innerHTML =
+        value === "X"
+          ? "<i class='fas fa-times' style='color: blue;'></i>"
+          : "<i class='fa-regular fa-circle' style='color: red;'></i>";
       document.getElementById(id).style.fontSize = "6vw";
       setDisabled(true);
     }
   }, [id]);
 
   const handleClick = (data) => {
-    console.log("Button clicked", data, disabledButton);
     sendDataToParent(data);
-    document.getElementById(data).innerText = marker;
-    document.getElementById(data).style.fontSize = "6vw";
+    document.getElementById(id).innerHTML =
+      value === "X"
+        ? "<i class='fas fa-times' style='color: blue;'></i>"
+        : "<i class='fa-regular fa-circle' style='color: red;'></i>";
+    document.getElementById(id).style.fontSize = "6vw";
+
     setDisabled(true);
   };
 
