@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ws from "../../utils/websocket";
 import { DataFormat } from "../../utils/data";
 import homepage from "../../images/homepage.jpg";
+import Swal from "sweetalert2";
 function HomePage() {
   useEffect(() => {
     document.title = "TicTacToe | Home";
@@ -14,18 +15,32 @@ function HomePage() {
   }, []);
   const navigate = useNavigate();
   const [name, setName] = useState("");
+
   const signup = (e) => {
     e.preventDefault();
     if (name === "") {
-      alert("Le nom est obligatoire");
-    } else {
-      ws.send(JSON.stringify(new DataFormat("ADD_USER", { name })));
-
-      ws.onmessage = (mess) => {
-        localStorage.setItem("user", mess.data);
-        navigate("../gamemode", { replace: true });
-      };
+      Swal.fire({
+        icon: "error",
+        title: "Name is required",
+        text: "Please enter your name",
+      });
+      return;
     }
+
+    ws.send(JSON.stringify(new DataFormat("ADD_USER", { name })));
+    ws.onmessage = (mess) => {
+      const result = JSON.parse(mess.data);
+      if (result.status) {
+        localStorage.setItem("user", JSON.stringify(result.data));
+        navigate("../gamemode", { replace: true });
+      }
+      if (!result.status)
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: result.message,
+        });
+    };
   };
   return (
     <div className="mt-5 d-flex flex-row justify-content-sm-center">
