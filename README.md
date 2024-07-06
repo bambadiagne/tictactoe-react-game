@@ -20,7 +20,7 @@ To install and run the game, you have two options:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/tictactoe-react-game.git
+   git clone https://github.com/bambadiagne/tictactoe-react-game.git
    ```
 
 2. Navigate to the project directory:
@@ -38,7 +38,7 @@ To install and run the game, you have two options:
 4. Start the development server:
 
    ```bash
-   npm start
+   npm run dev
    ```
 
 #### Option 2: Using Docker Compose
@@ -46,7 +46,7 @@ To install and run the game, you have two options:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/tictactoe-react-game.git
+   git clone https://github.com/bambadiagne/tictactoe-react-game.git
    ```
 
 2. Navigate to the project directory:
@@ -55,15 +55,16 @@ To install and run the game, you have two options:
    cd tictactoe-react-game
    ```
 
-3. Build and run the Docker containers:
+3. Build and run the Docker container:
 
    ```bash
-   docker-compose up -d
+   docker build . -t tictoctae-react-game
+   docker run -dp 5000:5000 tictoctae-react-game
    ```
 
 ### Usage
 
-Once the development server is running, you can access the game in your web browser at `http://localhost:3000`.
+Once the development server is running, you can access the game in your web browser at `http://localhost:5000`.
 
 ### Contributing
 
@@ -74,7 +75,3 @@ Contributions are welcome! If you would like to contribute to this project, plea
 3. Make your changes and commit them.
 4. Push your changes to your forked repository.
 5. Submit a pull request.
-
-### License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
