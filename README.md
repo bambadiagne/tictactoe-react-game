@@ -1,5 +1,7 @@
 # tictactoe-react-game
+
 Tic Tac Toe(morpion) game in react
+
 ## Documentation
 
 This project is a Tic Tac Toe game implemented using React and Node.js.
@@ -17,47 +19,47 @@ To install and run the game, you have two options:
 
 1. Clone the repository:
 
-    ```bash
-    git clone https://github.com/your-username/tictactoe-react-game.git
-    ```
+   ```bash
+   git clone https://github.com/your-username/tictactoe-react-game.git
+   ```
 
 2. Navigate to the project directory:
 
-    ```bash
-    cd tictactoe-react-game
-    ```
+   ```bash
+   cd tictactoe-react-game
+   ```
 
 3. Install the dependencies:
 
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
 4. Start the development server:
 
-    ```bash
-    npm start
-    ```
+   ```bash
+   npm start
+   ```
 
 #### Option 2: Using Docker Compose
 
 1. Clone the repository:
 
-    ```bash
-    git clone https://github.com/your-username/tictactoe-react-game.git
-    ```
+   ```bash
+   git clone https://github.com/your-username/tictactoe-react-game.git
+   ```
 
 2. Navigate to the project directory:
 
-    ```bash
-    cd tictactoe-react-game
-    ```
+   ```bash
+   cd tictactoe-react-game
+   ```
 
 3. Build and run the Docker containers:
 
-    ```bash
-    docker-compose up -d
-    ```
+   ```bash
+   docker-compose up -d
+   ```
 
 ### Usage
 
@@ -76,4 +78,3 @@ Contributions are welcome! If you would like to contribute to this project, plea
 ### License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
-

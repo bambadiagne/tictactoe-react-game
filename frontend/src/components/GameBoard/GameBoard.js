@@ -85,8 +85,7 @@ function GameBoard({ showGameMode, game }) {
         text: result.message,
       });
     }
-    if(result.disconnected) showGameMode(true);
-
+    if (result.disconnected) showGameMode(true);
   };
 
   return (

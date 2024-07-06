@@ -40,8 +40,6 @@ function HomePage() {
           title: "Error",
           text: result.message,
         });
-        
-     
     };
   };
   return (

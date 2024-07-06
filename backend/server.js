@@ -2,7 +2,9 @@
 const User = require("./utils/user");
 const Game = require("./utils/game");
 const Room = require("./utils/room");
-// import { checkMatrix } from './utils/checkMatrix.js';
+const express = require("express");
+const path = require("path");
+
 const StatusPlayer = require("./utils/status-player");
 const http = require("http");
 const crypto = require("crypto");
@@ -47,7 +49,7 @@ const broadCastRoom = (room, data) => {
   });
 };
 const clearRoom = (room) => {
-  console.log('room connections',room.connections.length);
+  console.log("room connections", room.connections.length);
   room.users.forEach((user) => {
     const userIndex = allUsers.result.findIndex(
       (u) => u.userID === user.userID
@@ -57,7 +59,7 @@ const clearRoom = (room) => {
   const index = allRooms.rooms.findIndex((r) => r.roomId === room.roomId);
   allRooms.rooms.splice(index, 1);
 };
-const server = http.createServer({ app });
+const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const allUsers = { result: [] };
 const allRooms = { rooms: [] };
@@ -67,22 +69,26 @@ wss.on("connection", function connection(ws) {
 
     switch (type) {
       case "ADD_USER":
-        const isAlreadyUser = allUsers.result.find((user) => user.name === dataReceived.name);
-        if(!isAlreadyUser){
-        const uniqueId = crypto.randomUUID();
-        ws.id = uniqueId;
-        const user = new User(
-          uniqueId,
-          dataReceived.name,
-          StatusPlayer.NOT_PLAYING,
-          "",
-          ws
+        const isAlreadyUser = allUsers.result.find(
+          (user) => user.name === dataReceived.name
         );
-        allUsers["result"].push(user);
-        ws.send(JSON.stringify({data:user,status:true}));
-        return;
-      }
-      ws.send(JSON.stringify({ status:false, message: "User already exists" }));
+        if (!isAlreadyUser) {
+          const uniqueId = crypto.randomUUID();
+          ws.id = uniqueId;
+          const user = new User(
+            uniqueId,
+            dataReceived.name,
+            StatusPlayer.NOT_PLAYING,
+            "",
+            ws
+          );
+          allUsers["result"].push(user);
+          ws.send(JSON.stringify({ data: user, status: true }));
+          return;
+        }
+        ws.send(
+          JSON.stringify({ status: false, message: "User already exists" })
+        );
         break;
       case "UPDATE_USER":
         const userUpdate = allUsers.result.find(
@@ -101,7 +107,7 @@ wss.on("connection", function connection(ws) {
         if (dataReceived.isBot) {
           allUsers.result[allUsers.result.indexOf(userJoin)].tokenSymbol = "X";
           const newGame = new Game(room, 0, true);
-          ws.send(JSON.stringify({data:newGame,status:true}));
+          ws.send(JSON.stringify({ data: newGame, status: true }));
         } else {
           const availablesPlayers = allUsers.result.filter(
             (player) =>
@@ -137,33 +143,35 @@ wss.on("connection", function connection(ws) {
               false
             );
             room.connections.forEach((client) => {
-              console.log("client",client.id);
+              console.log("client", client.id);
               if (client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify({ data: newGame,status:true }));
+                client.send(JSON.stringify({ data: newGame, status: true }));
               }
             });
-          } 
+          }
         }
       case "GET_SINGLE_ROOM":
-        
         if (dataReceived.roomId) {
           const room = allRooms.rooms.find(
             (room) => room.roomId === dataReceived.roomId
           );
-          ws.send(JSON.stringify({data:room,status:true}));
+          ws.send(JSON.stringify({ data: room, status: true }));
         }
         break;
       case "UPDATE_GAME":
         dataReceived.game.step = dataReceived.game.step + 1;
-        
+
         const room = allRooms.rooms.find(
           (room) => room.roomId === dataReceived.game.room.roomId
         );
         if (dataReceived.game.step >= 4) {
           const { result, element } = checkMatrix(dataReceived.game.tab);
-          
+
           if (result) {
-            dataReceived.game.winner = element === "O" ? dataReceived.game.room.users[0] : dataReceived.game.room.users[1];
+            dataReceived.game.winner =
+              element === "O"
+                ? dataReceived.game.room.users[0]
+                : dataReceived.game.room.users[1];
             dataReceived.game.isFinished = true;
             clearRoom(room);
           } else if (dataReceived.game.step === 9) {
@@ -177,23 +185,30 @@ wss.on("connection", function connection(ws) {
       default:
         break;
     }
- },)
-  .on("close",() => {
-    const userIndex = allUsers.result.findIndex(user => user.userID === ws.id);
+  }).on("close", () => {
+    const userIndex = allUsers.result.findIndex(
+      (user) => user.userID === ws.id
+    );
     if (userIndex !== -1) {
-       allUsers.result[userIndex].statusPlayer = StatusPlayer.NOT_PLAYING;
-       const indexRoom = allRooms.rooms.findIndex(room => room.users.includes(allUsers.result[userIndex]));
-        if (indexRoom !== -1) {
-          allRooms.rooms[indexRoom].connections.forEach((client) => {
-            client.send(JSON.stringify({ message:`Your opponent ${allUsers.result[userIndex].name} is disconnected`,status:false,disconnected:true }));
-          });
-        }
+      allUsers.result[userIndex].statusPlayer = StatusPlayer.NOT_PLAYING;
+      const indexRoom = allRooms.rooms.findIndex((room) =>
+        room.users.includes(allUsers.result[userIndex])
+      );
+      if (indexRoom !== -1) {
+        allRooms.rooms[indexRoom].connections.forEach((client) => {
+          client.send(
+            JSON.stringify({
+              message: `Your opponent ${allUsers.result[userIndex].name} is disconnected`,
+              status: false,
+              disconnected: true,
+            })
+          );
+        });
+      }
       console.log(`User ${allUsers.result[userIndex].name} disconnected`);
       allUsers.result.splice(userIndex, 1);
-      
     }
-  })
-  
+  });
 });
 
 server.on("error", errorHandler);
