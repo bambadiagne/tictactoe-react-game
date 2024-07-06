@@ -1,11 +1,9 @@
-import { WebSocketServer } from 'ws';
+import { WebSocketServer } from "ws";
 
 const wss = new WebSocketServer({ port: 3000 });
 
-wss.on('connection', function connection(ws) {
-  ws.on('message', function message(data) {
-    
-  });
+wss.on("connection", function connection(ws) {
+  ws.on("message", function message(data) {});
 
-  ws.send('something');
+  ws.send("something");
 });

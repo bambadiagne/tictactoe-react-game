@@ -1,8 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-
+const path = require("path");
 const app = express();
 
+app.use(express.static(path.join(__dirname, "..", "frontend", "build")));
+console.log(
+  "frontend build directory",
+  path.join(__dirname, "..", "frontend", "build")
+);
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -17,5 +22,9 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.json());
+app.get("*", (req, res) => {
+  console.log("sending index.html", req.url);
+  res.sendFile(path.join(__dirname, "..", "frontend", "build", "index.html"));
+});
 
 module.exports = app;
