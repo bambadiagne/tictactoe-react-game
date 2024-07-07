@@ -22,9 +22,10 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.json());
+if(process.env.NODE_ENV === 'production') {
 app.get("*", (req, res) => {
   console.log("sending index.html", req.url);
   res.sendFile(path.join(__dirname, "..", "frontend", "build", "index.html"));
 });
-
+}
 module.exports = app;

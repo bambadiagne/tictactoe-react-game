@@ -25,11 +25,11 @@
     "concurrently": "^8.2.2"
   },
   "scripts": {
-    "start:app": "npm run build --prefix frontend && nodemon backend/server.js",
+    "prebuild": "npm run build --prefix frontend",
+    "build":"nodemon backend/server.js",
     "start:backend": "nodemon backend/server.js",
     "start:frontend": "npm start --prefix frontend",
-    "dev": "nodemon backend/server.js && npm start --prefix frontend",
-    "build:frontend": "npm run build --prefix frontend",
+    "dev": "concurrently \"nodemon backend/server.js\" \"npm start --prefix frontend\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prettier": "npx prettier --write ."
   },
