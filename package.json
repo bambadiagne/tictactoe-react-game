@@ -26,6 +26,7 @@
   },
   "scripts": {
     "prebuild": "npm run build --prefix frontend",
+    "build:backend":"node backend/server.js",
     "build":"nodemon backend/server.js",
     "start:backend": "nodemon backend/server.js",
     "start:frontend": "npm start --prefix frontend",
